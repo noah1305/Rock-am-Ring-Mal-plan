@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speiseplan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --cream: #f5f0e8;
+    --brown: #3d2b1f;
+    --terracotta: #c4623a;
+    --sage: #7a9a72;
+    --sand: #e0d0bb;
+    --dark: #1e1510;
+    --charcoal: #2c2c2c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--brown);
+    font-family: 'DM Sans', sans-serif;
+    padding: 32px 20px 60px;
+    min-height: 100vh;
+  }
+
+  .lang-switcher {
+    position: fixed; top: 16px; right: 20px; z-index: 999;
+    display: flex; gap: 4px;
+    background: var(--charcoal); border-radius: 8px; padding: 4px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .lang-btn {
+    border: none; background: transparent; color: #aaa;
+    font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600;
+    padding: 5px 10px; border-radius: 5px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s;
+  }
+  .lang-btn.active { background: var(--terracotta); color: white; }
+
+  header { text-align: center; margin-bottom: 32px; padding-top: 8px; }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900;
+    color: var(--dark); line-height: 1; letter-spacing: -1px;
+  }
+  header p {
+    font-size: 0.85rem; font-weight: 300; color: var(--terracotta);
+    letter-spacing: 3px; text-transform: uppercase; margin-top: 6px;
+  }
+
+  .intro-box {
+    max-width: 700px; margin: 0 auto 28px;
+    background: var(--charcoal); border: 1px solid #4a4540;
+    border-radius: 16px; padding: 22px 28px; color: #e8dfd4;
+    line-height: 1.7; box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  }
+  .intro-box .intro-headline {
+    font-family: 'Playfair Display', serif; font-size: 1.15rem;
+    font-weight: 700; color: #f0e6d8; margin-bottom: 8px;
+  }
+  .intro-box p { font-size: 0.9rem; color: #c8bfb5; }
+  .intro-box strong { color: #e8c9a8; font-weight: 600; }
+
+  .water-box {
+    max-width: 700px; margin: 0 auto 36px;
+    background: #1e2e38; border: 1px solid #2a4555;
+    border-radius: 14px; padding: 15px 22px;
+    font-size: 0.87rem; line-height: 1.6; color: #9dc4d8;
+  }
+  .water-box strong { color: #b8dde8; }
+
+  
+
+  .days {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px; max-width: 1100px; margin: 0 auto;
+  }
+
+  .day-card {
+    background: white; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 16px rgba(61,43,31,0.08); border: 1px solid var(--sand);
+  }
+  .day-header {
+    padding: 16px 20px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .day-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: white;
+  }
+  .badge {
+    background: rgba(255,255,255,0.22); color: white;
+    font-size: 0.7rem; font-weight: 500; padding: 3px 10px;
+    border-radius: 20px; letter-spacing: 0.5px; white-space: nowrap;
+  }
+  .mittwoch .day-header   { background: var(--terracotta); }
+  .donnerstag .day-header { background: #b85c2a; }
+  .freitag .day-header    { background: var(--sage); }
+  .samstag .day-header    { background: #5a7a52; }
+  .sonntag .day-header    { background: #8b7355; }
+
+  .meals { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .meal { border-bottom: 1px solid var(--sand); padding-bottom: 14px; }
+  .meal:last-child { border-bottom: none; padding-bottom: 0; }
+  .meal-label {
+    font-size: 0.68rem; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--terracotta); margin-bottom: 4px;
+  }
+  .meal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 700; color: var(--dark); margin-bottom: 8px;
+  }
+  .items { list-style: none; display: flex; flex-wrap: wrap; gap: 5px; }
+  .items li {
+    background: var(--cream); border: 1px solid var(--sand);
+    border-radius: 6px; padding: 3px 9px;
+    font-size: 0.78rem; color: var(--brown);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .items li .qty { font-weight: 600; color: var(--terracotta); font-size: 0.72rem; }
+  .note { font-size: 0.75rem; color: #999; font-style: italic; margin-top: 6px; }
+  .tag {
+    display: inline-block; font-size: 0.65rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 4px; margin-left: 4px; vertical-align: middle;
+  }
+  .tag-easy { background: #e8f4e8; color: #4a7a42; }
+  .tag-cook { background: #fdeee6; color: #c4623a; }
+
+  /* WISHES */
+  .wishes-section { max-width: 1100px; margin: 40px auto 0; }
+  .wishes-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .wishes-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700; color: var(--dark);
+  }
+  .refresh-btn {
+    border: 1px solid var(--sand); background: white; color: var(--brown);
+    font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 500;
+    padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: var(--sand); }
+
+  .wish-form {
+    background: white; border: 1px solid var(--sand);
+    border-radius: 16px; padding: 20px 22px;
+    box-shadow: 0 2px 12px rgba(61,43,31,0.06); margin-bottom: 8px;
+  }
+  .wish-form-fields { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.fg-name    { flex: 2; min-width: 120px; }
+  .form-group.fg-product { flex: 3; min-width: 160px; }
+  .form-group.fg-qty     { flex: 1; min-width: 90px; }
+  .form-group label {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--terracotta);
+  }
+  .form-group input {
+    border: 1px solid var(--sand); border-radius: 8px; padding: 8px 11px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--brown);
+    background: var(--cream); outline: none; transition: border-color 0.2s; width: 100%;
+  }
+  .form-group input:focus { border-color: var(--terracotta); }
+  .submit-btn {
+    background: var(--terracotta); color: white; border: none;
+    border-radius: 8px; padding: 8px 18px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: background 0.2s; white-space: nowrap;
+    flex-shrink: 0; height: 36px; align-self: flex-end;
+  }
+  .submit-btn:hover { background: #b85030; }
+  .submit-btn:disabled { background: #ccc; cursor: default; }
+
+  .status-msg { font-size: 0.78rem; margin-top: 6px; color: var(--sage); min-height: 18px; }
+
+  .wish-list { display: flex; flex-direction: column; gap: 10px; }
+  .wish-item {
+    background: white; border: 1px solid var(--sand);
+    border-radius: 12px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 1px 6px rgba(61,43,31,0.05);
+  }
+  .wish-item .wi-name { font-weight: 600; font-size: 0.88rem; color: var(--dark); min-width: 80px; }
+  .wish-item .wi-time { font-size: 0.7rem; color: #aaa; font-style: italic; }
+  .wish-item .wi-product { font-size: 0.88rem; color: var(--brown); flex: 1; }
+  .wish-item .wi-qty {
+    font-size: 0.78rem; font-weight: 600; color: var(--terracotta);
+    background: #fdeee6; padding: 2px 9px; border-radius: 6px;
+  }
+  .empty-msg { font-size: 0.85rem; color: #bbb; font-style: italic; padding: 12px 0; }
+
+  @media (max-width: 520px) {
+    .wish-form-fields { flex-direction: column; }
+    .form-group.fg-name, .form-group.fg-product, .form-group.fg-qty { flex: unset; width: 100%; }
+    .submit-btn { width: 100%; }
+    
+  }
+</style>
+</head>
+<body>
+
+<div class="lang-switcher">
+  <button class="lang-btn active" onclick="setLang('de')">DE</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+</div>
+
+<header>
+  <h1 data-de="Speiseplan" data-en="Meal Plan">Speiseplan</h1>
+  <p data-de="Festival · Mittwoch – Sonntag" data-en="Festival · Wednesday – Sunday">Festival · Mittwoch – Sonntag</p>
+</header>
+
+<div class="intro-box">
+  <div class="intro-headline"
+    data-de="Ich biete an, den Einkauf zu übernehmen."
+    data-en="I'm happy to take care of the shopping.">
+    Ich biete an, den Einkauf zu übernehmen.
+  </div>
+  <p
+    data-de="Da viele noch arbeiten, kann ich das gerne erledigen. Wer noch Wünsche hat, einfach unten eintragen."
+    data-en="Since many of you are still working, I'm happy to sort it. Just add any requests below.">
+    Da viele noch arbeiten, kann ich das gerne erledigen. Wer noch Wünsche hat, einfach unten eintragen.
+  </p>
+</div>
+
+<div class="water-box">
+  <span
+    data-de="💧 <strong>Wasser:</strong> Für 6–9 Personen bei Sommerhitze wird einiges gebraucht – kann ich gerne mit besorgen."
+    data-en="💧 <strong>Water:</strong> For 6–9 people in summer heat you'll need quite a bit – happy to grab that too.">
+    💧 <strong>Wasser:</strong> Für 6–9 Personen bei Sommerhitze wird einiges gebraucht – kann ich gerne mit besorgen.
+  </span>
+</div>
+
+  <div class="setup-status" id="setup-status"></div>
+</div>
+
+<div class="days">
+
+  <div class="day-card mittwoch">
+    <div class="day-header">
+      <h2 data-de="Mittwoch" data-en="Wednesday">Mittwoch</h2>
+      <span class="badge" data-de="6 Personen" data-en="6 People">6 Personen</span>
+    </div>
+    <div class="meals">
+      <div class="meal">
+        <div class="meal-label"><span data-de="Abend" data-en="Evening">Abend</span> <span class="tag tag-easy">Easy</span></div>
+        <div class="meal-title" data-de="Kartoffelsalat" data-en="Potato Salad">Kartoffelsalat</div>
+        <ul class="items">
+          <li><span class="qty">3 kg</span> <span data-de="Kartoffelsalat (fertig)" data-en="Potato salad (ready-made)">Kartoffelsalat (fertig)</span></li>
+          <li><span class="qty">1 Pkg</span> Baguette</li>
+        </ul>
+        <div class="note" data-de="Alles vorab vorbereitet & mitgebracht – einfach hinstellen und essen 🙌" data-en="Everything prepared & brought along – just set it out and eat 🙌">Alles vorab vorbereitet & mitgebracht – einfach hinstellen und essen 🙌</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card donnerstag">
+    <div class="day-header">
+      <h2 data-de="Donnerstag" data-en="Thursday">Donnerstag</h2>
+      <span class="badge" data-de="6 Früh · 8 Mittag" data-en="6 Breakfast · 8 Lunch">6 Früh · 8 Mittag</span>
+    </div>
+    <div class="meals">
+      <div class="meal">
+        <div class="meal-label"><span data-de="Frühstück" data-en="Breakfast">Frühstück</span> <span class="tag tag-easy">Easy</span></div>
+        <div class="meal-title" data-de="Müsli · Brot · Aufstrich" data-en="Muesli · Bread · Spreads">Müsli · Brot · Aufstrich</div>
+        <ul class="items">
+          <li data-de="Müsli" data-en="Muesli">Müsli</li>
+          <li data-de="H-Milch" data-en="UHT milk">H-Milch</li>
+          <li data-de="Brot" data-en="Bread">Brot</li>
+          <li data-de="Erdnussbutter" data-en="Peanut butter">Erdnussbutter</li>
+          <li data-de="Marmelade" data-en="Jam">Marmelade</li>
+          <li>Nutella</li>
+        </ul>
+        <div class="note" data-de="Alles vorab vorbereitet – einfach zugreifen" data-en="All set up in advance – just help yourself">Alles vorab vorbereitet – einfach zugreifen</div>
+      </div>
+      <div class="meal">
+        <div class="meal-label"><span data-de="Mittag" data-en="Lunch">Mittag</span> <span class="tag tag-cook" data-de="Grillen" data-en="BBQ">Grillen</span></div>
+        <div class="meal-title" data-de="Grillen" data-en="BBQ">Grillen</div>
+        <ul class="items">
+          <li><span class="qty">16</span> <span data-de="Würste" data-en="Sausages">Würste</span></li>
+          <li><span class="qty">8</span> Steaks</li>
+          <li><span class="qty">4</span> <span data-de="Grillkäse" data-en="Grilling cheese">Grillkäse</span></li>
+          <li><span class="qty">4</span> Baguette</li>
+          <li><span class="qty">2 kg</span> <span data-de="Grillgemüse" data-en="Grilling vegetables">Grillgemüse</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card freitag">
+    <div class="day-header">
+      <h2 data-de="Freitag" data-en="Friday">Freitag</h2>
+      <span class="badge" data-de="8 Früh · 9 Mittag" data-en="8 Breakfast · 9 Lunch">8 Früh · 9 Mittag</span>
+    </div>
+    <div class="meals">
+      <div class="meal">
+        <div class="meal-label"><span data-de="Frühstück" data-en="Breakfast">Frühstück</span> <span class="tag tag-easy">Easy</span></div>
+        <div class="meal-title" data-de="Müsli · Brot · Aufstrich" data-en="Muesli · Bread · Spreads">Müsli · Brot · Aufstrich</div>
+        <ul class="items">
+          <li data-de="Müsli" data-en="Muesli">Müsli</li>
+          <li data-de="H-Milch" data-en="UHT milk">H-Milch</li>
+          <li data-de="Brot" data-en="Bread">Brot</li>
+          <li data-de="Aufstrich" data-en="Spread">Aufstrich</li>
+        </ul>
+      </div>
+      <div class="meal">
+        <div class="meal-label"><span data-de="Mittag" data-en="Lunch">Mittag</span> <span class="tag tag-cook" data-de="Kochen" data-en="Cooking">Kochen</span></div>
+        <div class="meal-title" data-de="Japanisches Curry" data-en="Japanese Curry">Japanisches Curry</div>
+        <ul class="items">
+          <li><span class="qty">3,5 kg</span> <span data-de="Kartoffeln" data-en="Potatoes">Kartoffeln</span></li>
+          <li><span class="qty">2,5 kg</span> <span data-de="Karotten" data-en="Carrots">Karotten</span></li>
+          <li><span class="qty">1,5 kg</span> <span data-de="Zwiebeln" data-en="Onions">Zwiebeln</span></li>
+          <li><span class="qty">3 Pkg</span> <span data-de="Curryblöcke" data-en="Curry blocks">Curryblöcke</span></li>
+          <li><span class="qty">2,5 kg</span> Reis / Rice</li>
+        </ul>
+        <div class="note" data-de="Alles haltbar & ungekühlt ✓" data-en="All shelf-stable, no refrigeration needed ✓">Alles haltbar & ungekühlt ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card samstag">
+    <div class="day-header">
+      <h2 data-de="Samstag" data-en="Saturday">Samstag</h2>
+      <span class="badge" data-de="9 Personen" data-en="9 People">9 Personen</span>
+    </div>
+    <div class="meals">
+      <div class="meal">
+        <div class="meal-label"><span data-de="Frühstück" data-en="Breakfast">Frühstück</span> <span class="tag tag-cook" data-de="Kochen" data-en="Cooking">Kochen</span></div>
+        <div class="meal-title">Pancakes</div>
+        <ul class="items">
+          <li><span class="qty">4 Pkg</span> Pancake-Mix</li>
+          <li><span class="qty">1,5 L</span> <span data-de="H-Milch" data-en="UHT milk">H-Milch</span></li>
+          <li><span class="qty">1 Glas</span> Sirup / Syrup</li>
+          <li><span class="qty">1 Glas</span> Nutella</li>
+        </ul>
+        <div class="note" data-de="Pancake-Mix funktioniert auch nur mit Wasser ✓" data-en="Mix also works with just water ✓">Pancake-Mix funktioniert auch nur mit Wasser ✓</div>
+      </div>
+      <div class="meal">
+        <div class="meal-label"><span data-de="Mittag" data-en="Lunch">Mittag</span> <span class="tag tag-easy">Easy</span></div>
+        <div class="meal-title" data-de="Instant Terrine & Brot" data-en="Instant Soup & Bread">Instant Terrine & Brot</div>
+        <ul class="items">
+          <li><span class="qty">9</span> <span data-de="Instant Terrine / Fertigsuppe" data-en="Instant noodle soup / cup soup">Instant Terrine / Fertigsuppe</span></li>
+          <li><span class="qty">2</span> Baguette</li>
+        </ul>
+        <div class="note" data-de="Aufwand sparen nach dem Frühstück-Kochen" data-en="Saving effort after cooking breakfast">Aufwand sparen nach dem Frühstück-Kochen</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card sonntag">
+    <div class="day-header">
+      <h2 data-de="Sonntag" data-en="Sunday">Sonntag</h2>
+      <span class="badge" data-de="9 Personen" data-en="9 People">9 Personen</span>
+    </div>
+    <div class="meals">
+      <div class="meal">
+        <div class="meal-label"><span data-de="Frühstück" data-en="Breakfast">Frühstück</span> <span class="tag tag-easy">Easy</span></div>
+        <div class="meal-title" data-de="Müsli · Brot · Aufstrich" data-en="Muesli · Bread · Spreads">Müsli · Brot · Aufstrich</div>
+        <ul class="items">
+          <li data-de="Müsli" data-en="Muesli">Müsli</li>
+          <li data-de="Brot" data-en="Bread">Brot</li>
+          <li data-de="Aufstrich nach Wunsch" data-en="Spreads of your choice">Aufstrich nach Wunsch</li>
+        </ul>
+      </div>
+      <div class="meal">
+        <div class="meal-label"><span data-de="Mittag" data-en="Lunch">Mittag</span> <span class="tag tag-easy">Easy</span></div>
+        <div class="meal-title" data-de="Dosengericht nach Wahl 🗳️" data-en="Canned food of your choice 🗳️">Dosengericht nach Wahl 🗳️</div>
+        <ul class="items">
+          <li><span class="qty">10 Dosen</span> Ravioli</li>
+          <li><span class="qty">2 Dosen</span> <span data-de="Ravioli vegetarisch" data-en="Ravioli vegetarian">Ravioli vegetarisch</span></li>
+        </ul>
+        <div class="note" data-de="Andere Wünsche willkommen – einfach unten eintragen!" data-en="Other requests welcome – just add them below!">Andere Wünsche willkommen – einfach unten eintragen!</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WISHES -->
+<div class="wishes-section">
+  <div class="wishes-header">
+    <h3 data-de="✏️ Weitere Wünsche" data-en="✏️ Additional Requests">✏️ Weitere Wünsche</h3>
+    <button class="refresh-btn" onclick="loadWishes()" data-de="↻ Aktualisieren" data-en="↻ Refresh">↻ Aktualisieren</button>
+  </div>
+
+  <div class="wish-form">
+    <div class="wish-form-fields">
+      <div class="form-group fg-name">
+        <label data-de="Name" data-en="Name">Name</label>
+        <input type="text" id="input-name" placeholder="Dein Name" data-de-placeholder="Dein Name" data-en-placeholder="Your name" maxlength="40">
+      </div>
+      <div class="form-group fg-product">
+        <label data-de="Produkt" data-en="Product">Produkt</label>
+        <input type="text" id="input-product" placeholder="z. B. Chips, Cola..." data-de-placeholder="z. B. Chips, Cola..." data-en-placeholder="e.g. Chips, Cola..." maxlength="80">
+      </div>
+      <div class="form-group fg-qty">
+        <label data-de="Menge" data-en="Quantity">Menge</label>
+        <input type="text" id="input-qty" placeholder="z. B. 2 Pkg" data-de-placeholder="z. B. 2 Pkg" data-en-placeholder="e.g. 2 packs" maxlength="30">
+      </div>
+      <button class="submit-btn" onclick="addWish()" id="submit-btn" data-de="Eintragen" data-en="Add">Eintragen</button>
+    </div>
+  </div>
+  <div class="status-msg" id="status-msg"></div>
+
+  <div class="wish-list" id="wish-list">
+    <div class="empty-msg">Noch keine Wünsche eingetragen.</div>
+  </div>
+</div>
+
+<script>
+let lang = 'de';
+let BIN_ID = '6a189b6221f9ee59d296bb7d';
+let API_KEY = '$2a$10$MmR29pQ6akL2XwoPD0802utI.8DoAnyIVK531C7FGM0S/qXPz5qM2';
+let USE_CLOUD = true;
+let localWishes = [];
+
+try { localWishes = JSON.parse(localStorage.getItem('festival_wishes') || '[]'); } catch(e) {}
+
+// ── Setup box visibility
+
+
+// ── Language
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${l}')"]`).classList.add('active');
+  document.querySelectorAll('[data-de]').forEach(el => {
+    const val = el.getAttribute('data-' + l);
+    if (val !== null) el.innerHTML = val;
+  });
+  document.querySelectorAll('[data-de-placeholder]').forEach(el => {
+    el.placeholder = el.getAttribute('data-' + l + '-placeholder') || el.placeholder;
+  });
+  renderWishes(localWishes);
+}
+
+// ── JSONBin
+async function loadWishes() {
+  if (!USE_CLOUD) { renderWishes(localWishes); return; }
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    const data = await r.json();
+    localWishes = data.record.wishes || [];
+    localStorage.setItem('festival_wishes', JSON.stringify(localWishes));
+    renderWishes(localWishes);
+  } catch(e) {
+    renderWishes(localWishes);
+    showStatus('⚠️ Cloud nicht erreichbar – lokale Daten angezeigt.', '#c47a3a');
+  }
+}
+
+async function saveWishes(wishes) {
+  localStorage.setItem('festival_wishes', JSON.stringify(wishes));
+  if (!USE_CLOUD) return false;
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify({ wishes })
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+// ── Render
+function renderWishes(wishes) {
+  const list = document.getElementById('wish-list');
+  if (!wishes || wishes.length === 0) {
+    list.innerHTML = `<div class="empty-msg">${lang === 'de' ? 'Noch keine Wünsche eingetragen.' : 'No requests yet.'}</div>`;
+    return;
+  }
+  list.innerHTML = wishes.map(w => `
+    <div class="wish-item">
+      <div>
+        <div class="wi-name">${esc(w.name)}</div>
+        <div class="wi-time">${lang === 'de' ? 'um' : 'at'} ${w.time}</div>
+      </div>
+      <div class="wi-product">${esc(w.product)}</div>
+      <div class="wi-qty">${esc(w.qty)}</div>
+    </div>
+  `).join('');
+}
+
+async function addWish() {
+  const name    = document.getElementById('input-name').value.trim();
+  const product = document.getElementById('input-product').value.trim();
+  const qty     = document.getElementById('input-qty').value.trim();
+  if (!name || !product || !qty) {
+    showStatus(lang === 'de' ? '⚠️ Bitte alle Felder ausfüllen.' : '⚠️ Please fill in all fields.', '#c47a3a');
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+  localWishes.push({ name, product, qty, time });
+  const ok = await saveWishes(localWishes);
+  renderWishes(localWishes);
+  document.getElementById('input-name').value = '';
+  document.getElementById('input-product').value = '';
+  document.getElementById('input-qty').value = '';
+  showStatus(
+    ok ? (lang === 'de' ? '✓ Eingetragen – für alle sichtbar!' : '✓ Added – visible for everyone!')
+       : (lang === 'de' ? '✓ Lokal gespeichert (Cloud nicht konfiguriert).' : '✓ Saved locally (cloud not configured).'),
+    ok ? '#7a9a72' : '#c47a3a'
+  );
+  btn.disabled = false;
+}
+
+function showStatus(msg, color) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg; el.style.color = color || '#7a9a72';
+  setTimeout(() => el.textContent = '', 4000);
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init
+loadWishes();
+</script>
+</body>
+</html>
